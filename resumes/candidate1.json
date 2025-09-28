@@ -1,0 +1,10 @@
+{
+  "firstName": "John",
+  "middleName": "",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "phone": "+31612345678",
+  "zipCode": "1234AB",
+  "motivation": "I am very motivated to contribute my skills.",
+  "cvFile": "john_doe_cv.pdf"
+}
