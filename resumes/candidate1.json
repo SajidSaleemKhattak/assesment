@@ -1,6 +1,6 @@
 {
   "firstName": "John",
-  "middleName": "",
+  "middleName": "nothing",
   "lastName": "Doe",
   "email": "john.doe@example.com",
   "phone": "+31612345678",

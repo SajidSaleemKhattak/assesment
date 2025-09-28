@@ -3,6 +3,27 @@ const fs = require("fs");
 const path = require("path");
 const parseResume = require("./utils/parseResume");
 
+const APPLIED_FILE = path.join(__dirname, "job-applied.json");
+
+function loadAppliedList() {
+  try {
+    if (fs.existsSync(APPLIED_FILE)) {
+      const txt = fs.readFileSync(APPLIED_FILE, "utf-8");
+      const data = JSON.parse(txt);
+      return Array.isArray(data) ? data : [];
+    }
+  } catch (_) {}
+  return [];
+}
+
+function saveAppliedList(list) {
+  try {
+    fs.writeFileSync(APPLIED_FILE, JSON.stringify(list, null, 2));
+  } catch (err) {
+    console.warn("⚠️ Unable to write job-applied.json:", err.message);
+  }
+}
+
 async function acceptCookiesIfPresent(page) {
   try {
     // Adecco commonly uses OneTrust and may also show a custom Dutch button
@@ -177,6 +198,7 @@ async function autoApply() {
 
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext();
+  const applied = loadAppliedList();
 
   for (const job of jobs) {
     console.log(`\n📌 Applying to: ${job.title} (${job.location || ''})`);
@@ -346,6 +368,20 @@ async function autoApply() {
       }
 
       console.log(`✅ Application submitted for: ${job.title}`);
+      // Persist to job-applied.json (dedupe by link)
+      try {
+        const exists = applied.some((j) => j.link === job.link);
+        if (!exists) {
+          applied.push({
+            title: job.title || "",
+            location: job.location || "",
+            link: job.link,
+            submittedAt: new Date().toISOString(),
+          });
+          saveAppliedList(applied);
+          console.log("💾 Saved to job-applied.json");
+        }
+      } catch (_) {}
       await formPage.waitForTimeout(3000);
 
       // Close form page if it was a popup/new tab
